@@ -1,4 +1,4 @@
-#define right1 8
+#define right1 9
 #define right2 10
 #define left1 3
 #define left2 11
@@ -15,7 +15,7 @@
 #define dread(x) digitalRead(x)
 #define dwrite(x,y) digitalWrite(x,y)
 
-const int SPEED = 120;
+const int SPEED = 160;
 
 void setup() {
   out(right1);
@@ -31,38 +31,45 @@ void setup() {
 
   Serial.begin(9600);
 }
-
+const int des = 25;
+bool prev = true; // true: right, false: left
+bool prev2 = true; // true: forward, false: backwards
 void loop() {
   bool right = infared(right_i);
   bool left = infared(left_i);
   int distance = ultra(ultping, ultecho);
-  bool far = distance > 25;
-  bool close = distance < 15;
-
-  sprint("right: ");
-  sprint(right);
-  sprint(" left: ");
   sprint(left);
-  sprint(" distance: ");
-  sprintln(distance);
-
-
-
-  if (left && right && far) {
-    go_forward(SPEED);
-  } else if (left && !right && far) {
-    go_left(SPEED, true);
-  } else if (left && !right && close) {
-    go_left(SPEED, false);
-  } else if (!left && right && far) {
-    go_right(SPEED, true);
-  } else if (!left && right && close) {
-    go_right(SPEED, false);
-  } else if (!left && !right && far) {
-    go_forward(SPEED);
-  } else if (!left && !right && close) {
-    go_back(SPEED);
-  } else if (left && right && close) {
-    go_back(SPEED);
+  sprint(" ");
+  sprint(right);
+  sprint(" ");
+  sprint(distance);
+  sprintln();
+  
+  // rotation
+  if (right && !left) {
+    if (prev) brake();
+    prev = false;
+    go_left(SPEED, distance > des);
+  } else if (!right && left) {
+    if (!prev) brake();
+    prev = true;
+    go_right(SPEED, distance > des);
+  } else if (!right && !left && distance > des) {
+    if (prev) go_right(SPEED, false);
+    else go_left(SPEED, false);
+  } else { // direction correct
+    sprintln("-_-");
+    if (distance > des) {
+      if (!prev2) brake();
+      prev2 = true;
+      go_forward(SPEED);
+    } else if (distance < des - 5) {
+      if (prev2) brake();
+      prev2 = false;
+      go_back(SPEED);
+    } else {
+      prev2 = true;
+      brake();
+    }
   }
 }

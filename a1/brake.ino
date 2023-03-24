@@ -3,4 +3,5 @@ void brake() {
   awrite(right2, 0);
   awrite(left1, 0);
   awrite(left2, 0);
+  delay(50);
 }
